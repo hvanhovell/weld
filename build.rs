@@ -2,9 +2,6 @@ use std::env;
 use std::process::Command;
 
 fn main() {
-    for (key, value) in env::vars() {
-        println!("{}: {}", key, value);
-    }
     let project_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
 
     let status = Command::new("make")
@@ -51,5 +48,4 @@ fn main() {
     // Link the weldrt C++ library
     println!("cargo:rustc-link-lib=dylib=weldrt");
     println!("cargo:rustc-link-search=native={}/weld_rt/cpp", project_dir);
-    println!("cargo:weldrt-location={}/weld_rt/cpp", project_dir);
 }

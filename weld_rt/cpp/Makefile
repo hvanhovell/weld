@@ -33,13 +33,9 @@ runtime.o: runtime.cpp
 
 ${DYLIB}: vb.o merger.o runtime.o inline.o
 	${CLANG} -shared -o $@ $^
-	mkdir -p ../../target/release
-	cp ${DYLIB} ../../target/release
-	mkdir -p ../../target/debug
-	cp ${DYLIB} ../../target/debug
+	cp ${DYLIB} ${OUT_DIR}/../../../
 
 clean:
 	rm -f *.bc *.o ${DYLIB}
 
 .phony: all
-
