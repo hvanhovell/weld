@@ -2,6 +2,9 @@ use std::env;
 use std::process::Command;
 
 fn main() {
+    for (key, value) in env::vars() {
+        println!("{}: {}", key, value);
+    }
     let project_dir = env::var("CARGO_MANIFEST_DIR").unwrap();
 
     let status = Command::new("make")
