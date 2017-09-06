@@ -18,7 +18,6 @@ use std::collections::HashMap;
 use std::error::Error;
 use libc::{c_char, c_void};
 use std::ffi::{CStr, CString};
-use std::sync::Mutex;
 
 use common::WeldRuntimeErrno;
 use common::WeldLogLevel;
@@ -244,17 +243,14 @@ pub unsafe extern "C" fn weld_module_compile(code: *const c_char,
     let code = code.to_str().unwrap().trim();
 
     // Let LLVM find symbols in libweldrt; it's okay to call this multiple times
-    let path = {
-        RT_LIBRART_PATH.lock().unwrap().clone()
-    };
-    let libweldrt = path + if cfg!(target_os="macos") {
+    let libweldrt = if cfg!(target_os="macos") {
         "libweldrt.dylib"
     } else if cfg!(target_os="windows") {
         "libweltrt.dll"
     } else {
         "libweldrt.so"
     };
-    easy_ll::load_library(&libweldrt).unwrap();
+    easy_ll::load_library(libweldrt).unwrap();
     info!("Loaded libweldrt in LLVM");
 
     info!("Started parsing program");
@@ -427,18 +423,6 @@ pub extern "C" fn weld_set_log_level(level: WeldLogLevel) {
     builder.format(format);
     builder.filter(None, filter);
     builder.init().unwrap_or(());
-}
-
-lazy_static! {
-    static ref RT_LIBRART_PATH: Mutex<String> = Mutex::new(String::from(""));
-}
-
-#[no_mangle]
-/// Set the directory where LLVM will look for the weld runtime library. If this path is not set
-/// the regular dlopen(..) lookup semantics apply.
-pub unsafe extern "C" fn weld_set_rt_library_path(path: *const c_char) {
-    let mut value = RT_LIBRART_PATH.lock().unwrap();
-    *value = CStr::from_ptr(path).to_str().unwrap().to_owned();
 }
 
 #[cfg(test)]
