@@ -1,4 +1,4 @@
-use libc::{c_void, int64_t, int32_t, size_t};
+use libc::{c_void, int64_t, int32_t};
 
 #[allow(non_camel_case_types)]
 type work_t = c_void;
@@ -56,9 +56,9 @@ extern "C" {
     #[no_mangle]
     pub fn weld_run_dispose(run_id: int64_t);
     #[no_mangle]
-    pub fn weld_run_malloc(run_id: int64_t, size: size_t) -> *mut c_void;
+    pub fn weld_run_malloc(run_id: int64_t, size: int64_t) -> *mut c_void;
     #[no_mangle]
-    pub fn weld_run_realloc(run_id: int64_t, data: *mut c_void, size: size_t) -> *mut c_void;
+    pub fn weld_run_realloc(run_id: int64_t, data: *mut c_void, size: int64_t) -> *mut c_void;
     #[no_mangle]
     pub fn weld_run_free(run_id: int64_t, data: *mut c_void);
     #[no_mangle]
