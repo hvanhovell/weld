@@ -2486,6 +2486,46 @@ fn nested_for_loops() {
     unsafe { free_value_and_module(ret_value) };
 }
 
+fn pass_dictionary() {
+    #[derive(Clone)]
+    #[allow(dead_code)]
+    struct Args {
+        d: *const c_void
+    }
+
+    #[derive(Clone)]
+    #[allow(dead_code)]
+    struct KV {
+        key: i32,
+        value: i32,
+    }
+
+    let c1 = "||let b = dictmerger[i32, i32, +]; let b1 = merge(b, {1, 2}); let b2 = merge(b, {2, 45}); result(b2)";
+    let c2 = "|d:dict[i32, i32]|sort(to_vec(d), |kv:{i32, i32}|kv.$0)";
+    let conf = default_conf();
+
+    let ref input_data = 0;
+    let ret_value1 = compile_and_run(c1, conf, input_data);
+    let dict = unsafe { weld_value_data(ret_value1) };
+    let ref input_data = Args {
+        d: dict
+    };
+    let ret_value2 = compile_and_run(c2, conf, input_data);
+    let data = unsafe { weld_value_data(ret_value2) as *const WeldVec<KV> };
+    let result = unsafe { (*data).clone() };
+    assert_eq!(result.len, 2i64);
+    let kv = unsafe { (*result.data.offset(0)).clone() };
+    assert_eq!(kv.key, 1);
+    assert_eq!(kv.value, 2);
+    let kv = unsafe { (*result.data.offset(1)).clone() };
+    assert_eq!(kv.key, 2);
+    assert_eq!(kv.value, 45);
+    unsafe {
+        free_value_and_module(ret_value1);
+        free_value_and_module(ret_value2)
+    };
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     let tests: Vec<(&str, fn())> =
@@ -2576,7 +2616,8 @@ fn main() {
              ("nested_for_loops", nested_for_loops),
              ("nested_appender_loop", nested_appender_loop),
              ("simple_sort", simple_sort),
-             ("complex_sort", complex_sort)];
+             ("complex_sort", complex_sort),
+             ("pass_dictionary", pass_dictionary)];
 
     println!("");
     println!("running tests");

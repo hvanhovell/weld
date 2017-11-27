@@ -1144,13 +1144,13 @@ impl<'t> Parser<'t> {
                 try!(self.consume(TComma));
                 let right = try!(self.expr());
                 try!(self.consume(TCloseParen));
-                
+
                 let res = expr_box(BinOp {
                     kind: Min,
                     left: left,
                     right: right,
                 }, Annotations::new());
-                
+
                 Ok(res)
             }
 
@@ -1160,13 +1160,13 @@ impl<'t> Parser<'t> {
                 try!(self.consume(TComma));
                 let right = try!(self.expr());
                 try!(self.consume(TCloseParen));
-                
+
                 let res = expr_box(BinOp {
                     kind: Max,
                     left: left,
                     right: right,
                 }, Annotations::new());
-                
+
                 Ok(res)
             }
 
@@ -1176,7 +1176,7 @@ impl<'t> Parser<'t> {
                 try!(self.consume(TComma));
                 let right = try!(self.expr());
                 try!(self.consume(TCloseParen));
-                
+
                 let res = expr_box(BinOp {
                     kind: Pow,
                     left: left,
@@ -1184,7 +1184,7 @@ impl<'t> Parser<'t> {
                 }, Annotations::new());
                 Ok(res)
             }
-            
+
             ref other => weld_err!("Expected expression but got '{}'", other),
         }
     }
@@ -1236,6 +1236,15 @@ impl<'t> Parser<'t> {
                 let elem_type = try!(self.type_());
                 try!(self.consume(TCloseBracket));
                 Ok(Vector(Box::new(elem_type)))
+            }
+
+            TDict => {
+                try!(self.consume(TOpenBracket));
+                let key_type = try!(self.type_());
+                try!(self.consume(TComma));
+                let value_type = try!(self.type_());
+                try!(self.consume(TCloseBracket));
+                Ok(Dict(Box::new(key_type), Box::new(value_type)))
             }
 
             TSimd => {
@@ -1459,6 +1468,9 @@ fn basic_parsing() {
 
     let t = parse_type("{}").unwrap();
     assert_eq!(print_type(&t), "{}");
+
+    let t = parse_type("dict[i32, i64]").unwrap();
+    assert_eq!(print_type(&t), "dict[i32,i64]");
 }
 
 #[test]

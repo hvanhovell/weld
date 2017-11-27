@@ -42,6 +42,7 @@ pub enum Token {
     TF64,
     TBool,
     TVec,
+    TDict,
     TZip,
     TScalarIter,
     TSimdIter,
@@ -168,7 +169,7 @@ pub fn tokenize(input: &str) -> WeldResult<Vec<Token>> {
             log|erf|sqrt|simd|select|broadcast|\
              iterate|cudf|simditer|fringeiter|iter|merge|result|let|true|false|macro|\
              i8|i16|i32|i64|u8|u16|u32|u64|f32|f64|bool|vec|appender|merger|vecmerger|\
-             dictmerger|groupmerger|tovec|min|max|pow)$").unwrap();
+             dictmerger|groupmerger|tovec|min|max|pow|dict)$").unwrap();
 
         static ref IDENT_RE: Regex = Regex::new(r"^[A-Za-z$_][A-Za-z0-9$_]*$").unwrap();
 
@@ -218,6 +219,7 @@ pub fn tokenize(input: &str) -> WeldResult<Vec<Token>> {
                             "f64" => TF64,
                             "bool" => TBool,
                             "vec" => TVec,
+                            "dict" => TDict,
                             "appender" => TAppender,
                             "merger" => TMerger,
                             "dictmerger" => TDictMerger,
@@ -371,6 +373,7 @@ impl fmt::Display for Token {
                     TF64 => "f64",
                     TBool => "bool",
                     TVec => "vec",
+                    TDict => "dict",
                     TAppender => "appender",
                     TMerger => "merger",
                     TDictMerger => "dictmerger",
@@ -619,6 +622,24 @@ fn basic_tokenize() {
                     TI32,
                     TBar,
                     TIdent("x".into()),
+                    TCloseParen,
+                    TEndOfInput]);
+    assert_eq!(tokenize("|a:dict[i32, f64]| keyexists(a, 1)").unwrap(),
+               vec![TBar,
+                    TIdent("a".into()),
+                    TColon,
+                    TDict,
+                    TOpenBracket,
+                    TI32,
+                    TComma,
+                    TF64,
+                    TCloseBracket,
+                    TBar,
+                    TKeyExists,
+                    TOpenParen,
+                    TIdent("a".into()),
+                    TComma,
+                    TI32Literal(1),
                     TCloseParen,
                     TEndOfInput]);
 }
